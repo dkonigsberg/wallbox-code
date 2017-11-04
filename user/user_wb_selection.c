@@ -17,6 +17,9 @@
 /* Maximum accumulated length of a pulse stream */
 #define MAX_WB_SELECTION_PULSES 64
 
+/* Minimum allowable pulse gap, in microseconds */
+#define DEBOUNCE_GAP 10000
+
 typedef struct wb_selection_pulse {
     uint32 elapsed; // time since the end of the last pulse
     uint32 duration; // duration of the current pulse
@@ -189,8 +192,19 @@ LOCAL void wp_pulse_gpio_intr_handler(int *dummy)
             else if (currentPulseValue == 0) {
                 //os_printf("--> Pulse: %dms\r\n", (elapsed / 1000));
                 if (wb_pulse_list[wb_pulse_index].elapsed > 0) {
-                    wb_pulse_list[wb_pulse_index].duration = elapsed;
-                    wb_pulse_index++;
+                    if (wb_pulse_index > 0 && wb_pulse_list[wb_pulse_index].elapsed < DEBOUNCE_GAP) {
+                        // If this pulse had a negligible gap from the previous
+                        // pulse, then merge them.
+                        wb_pulse_list[wb_pulse_index - 1].duration +=
+                            wb_pulse_list[wb_pulse_index].elapsed + elapsed;
+
+                        wb_pulse_list[wb_pulse_index].elapsed = 0;
+                        wb_pulse_list[wb_pulse_index].duration = 0;
+                        //os_printf("-->Debounce\n");
+                    } else {
+                        wb_pulse_list[wb_pulse_index].duration = elapsed;
+                        wb_pulse_index++;
+                    }
                 } else {
                     // Error
                     os_printf("--> Error 2\r\n");
@@ -249,6 +263,15 @@ void wb_pulse_timer_func(void *arg)
     } else {
         result = false;
     }
+
+#if 0
+    int i;
+    os_printf("----BEGIN PULSES----\n");
+    for (i = 0; i < wb_pulse_index; i++) {
+        os_printf("%d, %d\n", wb_pulse_list[i].elapsed / 1000, wb_pulse_list[i].duration / 1000);
+    }
+    os_printf("----END PULSES----\n");
+#endif
 
     wb_pulse_list_clear();
     gpio_pin_intr_state_set(GPIO_ID_PIN(4), GPIO_PIN_INTR_ANYEDGE);
