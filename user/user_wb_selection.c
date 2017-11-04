@@ -9,6 +9,12 @@
 
 #include "user_sonos_client.h"
 
+/* Definition of GPIO pin parameters */
+#define SELECTION_SIGNAL_IO_MUX  PERIPHS_IO_MUX_GPIO4_U
+#define SELECTION_SIGNAL_IO_NUM  4
+#define SELECTION_SIGNAL_IO_FUNC FUNC_GPIO4
+
+/* Maximum accumulated length of a pulse stream */
 #define MAX_WB_SELECTION_PULSES 64
 
 typedef struct wb_selection_pulse {
@@ -18,9 +24,12 @@ typedef struct wb_selection_pulse {
 
 LOCAL void wb_pulse_list_clear();
 LOCAL bool wb_pulse_list_tally_3w1_100(char *letter, int *number);
+LOCAL bool wb_pulse_list_tally_v3wa_200(char *letter, int *number);
 LOCAL void wp_pulse_gpio_intr_handler(int *dummy);
 LOCAL void wb_pulse_timer_func(void *arg);
 
+LOCAL volatile wallbox_type wb_selected_type;
+LOCAL volatile wallbox_type wb_active_type;
 LOCAL volatile int wb_pulse_last_value;
 LOCAL volatile uint32 wb_pulse_last_time;
 LOCAL volatile wb_selection_pulse wb_pulse_list[MAX_WB_SELECTION_PULSES];
@@ -96,6 +105,50 @@ bool wb_pulse_list_tally_3w1_100(char *letter, int *number)
     return true;
 }
 
+/*
+ * Count the signal pulses.
+ * Wallbox: Seeburg Wall-O-Matic V-3WA 200
+ */
+LOCAL bool wb_pulse_list_tally_v3wa_200(char *letter, int *number)
+{
+    LOCAL const char WB_LETTERS[] = "ABCDEFGHJKLMNPQRSTUV";
+    int i;
+    int p1 = 0;
+    int p2 = 0;
+    bool delimiter = false;
+    char letter_val;
+    int number_val;
+
+    for (i = 0; i < wb_pulse_index; i++) {
+        // Gap delimiter is ~230ms, so use 125 to be safe
+        if (p1 > 0 && !delimiter && wb_pulse_list[i].elapsed > 125000) {
+            delimiter = true;
+            //os_printf("----DELIMITER (GAP)----\r\n");
+        }
+        if (!delimiter) {
+            p1++;
+        }
+        else {
+            p2++;
+        }
+    }
+
+    if (p1 < 2 || p1 > 21 || p2 < 1 || p2 > 10) {
+        // Reject invalid or incomplete values
+        return false;
+    }
+
+    letter_val = WB_LETTERS[p1 - 2];
+    number_val = p2;
+
+    if (letter && number) {
+        *letter = letter_val;
+        *number = number_val;
+    }
+
+    return true;
+}
+
 LOCAL void wp_pulse_gpio_intr_handler(int *dummy)
 {
     uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
@@ -111,6 +164,13 @@ LOCAL void wp_pulse_gpio_intr_handler(int *dummy)
 
         int currentPulseValue = GPIO_INPUT_GET(GPIO_ID_PIN(SELECTION_SIGNAL_IO_NUM));
         uint32 currentPulseTime = system_get_time();
+
+        if (wb_active_type != wb_selected_type) {
+            wb_active_type = wb_selected_type;
+            if (wb_pulse_index > 0) {
+                wb_pulse_list_clear();
+            }            
+        }
 
         // Do something
         if(currentPulseValue != wb_pulse_last_value) {
@@ -141,8 +201,18 @@ LOCAL void wp_pulse_gpio_intr_handler(int *dummy)
                 wb_pulse_list_clear();
             } else {
                 // Count existing pulses
-                if (wb_pulse_list_tally_3w1_100(0, 0)) {
-                    timeout = 250;
+                if (wb_active_type == SEEBURG_3W1_100) {
+                    if (wb_pulse_list_tally_3w1_100(0, 0)) {
+                        timeout = 250;
+                    }
+                } else if(wb_active_type == SEEBURG_V3WA_200) {
+                    if (wb_pulse_list_tally_v3wa_200(0, 0)) {
+                        timeout = 250;
+                    }
+                } else {
+                    // Unknown wallbox type
+                    os_printf("Unknown wallbox\n");
+                    wb_pulse_list_clear();
                 }
             }
             wb_pulse_last_value = currentPulseValue;
@@ -171,7 +241,15 @@ void wb_pulse_timer_func(void *arg)
     os_timer_disarm(&wb_pulse_timer);
 
     gpio_pin_intr_state_set(GPIO_ID_PIN(4), GPIO_PIN_INTR_DISABLE);
-    result = wb_pulse_list_tally_3w1_100(&letter, &number);
+
+    if (wb_active_type == SEEBURG_3W1_100) {
+        result = wb_pulse_list_tally_3w1_100(&letter, &number);
+    } else if(wb_active_type == SEEBURG_V3WA_200) {
+        result = wb_pulse_list_tally_v3wa_200(&letter, &number);
+    } else {
+        result = false;
+    }
+
     wb_pulse_list_clear();
     gpio_pin_intr_state_set(GPIO_ID_PIN(4), GPIO_PIN_INTR_ANYEDGE);
 
@@ -183,6 +261,11 @@ void wb_pulse_timer_func(void *arg)
     }
 }
 
+void ICACHE_FLASH_ATTR user_wb_set_wallbox_type(wallbox_type wb_type)
+{
+    wb_selected_type = wb_type;
+}
+
 void ICACHE_FLASH_ATTR user_wb_selection_init(void)
 {
     // Initialize state variables
@@ -190,6 +273,8 @@ void ICACHE_FLASH_ATTR user_wb_selection_init(void)
     wb_pulse_last_time = system_get_time();
     os_memset(wb_pulse_timer, 0, sizeof(wb_pulse_timer));
     wb_pulse_list_clear();
+    wb_selected_type = UNKNOWN_WALLBOX;
+    wb_active_type = UNKNOWN_WALLBOX;
 
     // Disable interrupts by GPIO
     ETS_GPIO_INTR_DISABLE();

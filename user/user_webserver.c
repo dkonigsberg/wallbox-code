@@ -445,6 +445,9 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_wb_song_select(HttpdConnData *data)
         user_config_set_sonos_uri_base(state->uri_base);
         user_config_set_sonos_track_files(&state->track_file);
 
+        // Update the active wallbox selection
+        user_wb_set_wallbox_type(user_config_get_wallbox_type());
+
         os_free(state);
         if (state->buf) {
             os_free(state->buf);

@@ -206,6 +206,8 @@ void ICACHE_FLASH_ATTR user_init()
         user_sonos_request_init();
         user_sonos_client_init();
 
+        user_wb_set_wallbox_type(user_config_get_wallbox_type());
+
         wifi_set_event_handler_cb(user_wifi_event_handler);
         user_sonos_discovery_set_callback(user_sonos_discovery_callback, 0);
     }
