@@ -256,6 +256,7 @@ LOCAL void ICACHE_FLASH_ATTR ssdp_recv_callback(void *arg, char *pusrdata, unsig
     unsigned short line_len = 0;
     bool is_notify = false;
     bool is_sonos = false;
+    bool is_zoneplayer = false;
 
     pdata = pusrdata;
     ptemp = (char *)os_strstr(pdata, "\r\n");
@@ -305,6 +306,12 @@ LOCAL void ICACHE_FLASH_ATTR ssdp_recv_callback(void *arg, char *pusrdata, unsig
                     is_sonos = false;
                     break;
                 }
+            }
+            else if (line_len >= 44 && os_strncmp(line_buf, "ST: urn:schemas-upnp-org:device:ZonePlayer:1", 19) == 0) {
+                is_zoneplayer = true;
+            }
+            else if (line_len >= 44 && os_strncmp(line_buf, "NT: urn:schemas-upnp-org:device:ZonePlayer:1", 19) == 0) {
+                is_zoneplayer = true;
             }
             else if (line_len > 10 && os_strncmp(line_buf, "USN: uuid:", 10) == 0) {
                 char *qtemp = os_strchr(line_buf + 10, ':');
@@ -366,7 +373,7 @@ LOCAL void ICACHE_FLASH_ATTR ssdp_recv_callback(void *arg, char *pusrdata, unsig
     }
 
     // Abort if the message wasn't a notification from a Sonos device
-    if (!is_notify || !is_sonos) {
+    if (!is_notify || !is_sonos || !is_zoneplayer) {
         return;
     }
 
