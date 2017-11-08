@@ -1,35 +1,38 @@
 <!doctype html>
 <html>
-    <head>
-        <meta charset="utf-8"/>
-        <title>Wall-O-Matic</title>
-        <link rel="stylesheet" type="text/css" href="style.css"/>
-    </head>
-    <body>
-        <div id="main">
-        <font size="+2"><b>Wall-O-Matic Interface</b></font><br/>
-        <hr/>
-        <p>
-            <ul>
-                <li><a href="/wifi">Configure Wi-Fi</a></li>
-                <li><a href="/sonos">Select Sonos Device</a></li>
-                <li><a href="/wallbox">Configure Wallbox</a></li>
-                <li>
-                    Insert Coins:<br/>
-                    <form method="post" action="/control/credit">
-                        <button type="submit" name="coin" value="5">Nickel</button>
-                        <button type="submit" name="coin" value="10">Dime</button>
-                        <button type="submit" name="coin" value="25">Quarter</button>
-                    </form>
-                </li>
-            </ul>
-        </p>
-        <br />
-        <br />
-        <br />
-        <br />
-        <hr/>
-        <center><img src="images/lprobe-logo.png"/><br/></center>
-        </div>
-    </body>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wall-O-Matic</title>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+<div id="main">
+<font size="+2"><b>Wall-O-Matic Interface</b></font><br/>
+<hr/>
+<p>
+    <div class="vertical-menu">
+        <a href="/wifi">Configure Wi-Fi</a>
+        <a href="/sonos">Select Sonos Device</a>
+        <a href="/wallbox">Configure Wallbox</a>
+    </div>
+    <div class="coin-area">
+        Insert Coins<br/>
+        <form method="post" action="/control/credit">
+            <table class="coin-button-table"><tr>
+            <td><button type="submit" class="coin-button" name="coin" value="5">Nickel</button></td>
+            <td><button type="submit" class="coin-button" name="coin" value="10">Dime</button></td>
+            <td><button type="submit" class="coin-button" name="coin" value="25">Quarter</button></td>
+            </tr></table>
+        </form>
+    </div>
+</p>
+<br />
+<br />
+<br />
+<br />
+<hr/>
+<center><img src="images/lprobe-logo.png"/><br/></center>
+</div>
+</body>
 </html>

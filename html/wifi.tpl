@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wi-Fi Configuration</title>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <script type="text/javascript" src="js/140medley.min.js"></script>
