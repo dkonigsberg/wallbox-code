@@ -6,6 +6,7 @@
 #include <os_type.h>
 #include <driver/uart.h>
 #include <user_interface.h>
+#include <libesphttpd/espmissingincludes.h>
 
 #include "user_sonos_client.h"
 
@@ -28,21 +29,21 @@ typedef struct wb_selection_pulse {
 LOCAL void wb_pulse_list_clear();
 LOCAL bool wb_pulse_list_tally_3w1_100(char *letter, int *number);
 LOCAL bool wb_pulse_list_tally_v3wa_200(char *letter, int *number);
-LOCAL void wp_pulse_gpio_intr_handler(int *dummy);
+LOCAL void wp_pulse_gpio_intr_handler(void *arg);
 LOCAL void wb_pulse_timer_func(void *arg);
 
 LOCAL volatile wallbox_type wb_selected_type;
 LOCAL volatile wallbox_type wb_active_type;
-LOCAL volatile int wb_pulse_last_value;
-LOCAL volatile uint32 wb_pulse_last_time;
-LOCAL volatile wb_selection_pulse wb_pulse_list[MAX_WB_SELECTION_PULSES];
-LOCAL volatile int wb_pulse_index;
-LOCAL volatile os_timer_t wb_pulse_timer;
+LOCAL int wb_pulse_last_value;
+LOCAL uint32 wb_pulse_last_time;
+LOCAL wb_selection_pulse wb_pulse_list[MAX_WB_SELECTION_PULSES];
+LOCAL int wb_pulse_index;
+LOCAL os_timer_t wb_pulse_timer;
 
 void wb_pulse_list_clear()
 {
     wb_pulse_index = 0;
-    os_memset(wb_pulse_list, 0, sizeof(wb_pulse_list));
+    os_bzero(wb_pulse_list, sizeof(wb_pulse_list));
 }
 
 /*
@@ -152,7 +153,7 @@ LOCAL bool wb_pulse_list_tally_v3wa_200(char *letter, int *number)
     return true;
 }
 
-LOCAL void wp_pulse_gpio_intr_handler(int *dummy)
+LOCAL void wp_pulse_gpio_intr_handler(void *arg)
 {
     uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
 
@@ -252,9 +253,10 @@ void wb_pulse_timer_func(void *arg)
     int number;
     bool result;
 
-    os_timer_disarm(&wb_pulse_timer);
-
+    // Disable interrupts while we process the results
     gpio_pin_intr_state_set(GPIO_ID_PIN(4), GPIO_PIN_INTR_DISABLE);
+
+    os_timer_disarm(&wb_pulse_timer);
 
     if (wb_active_type == SEEBURG_3W1_100) {
         result = wb_pulse_list_tally_3w1_100(&letter, &number);
@@ -274,6 +276,8 @@ void wb_pulse_timer_func(void *arg)
 #endif
 
     wb_pulse_list_clear();
+
+    // Reenable interrupts
     gpio_pin_intr_state_set(GPIO_ID_PIN(4), GPIO_PIN_INTR_ANYEDGE);
 
     if (result) {
@@ -294,7 +298,7 @@ void ICACHE_FLASH_ATTR user_wb_selection_init(void)
     // Initialize state variables
     wb_pulse_last_value = 0;
     wb_pulse_last_time = system_get_time();
-    os_memset(wb_pulse_timer, 0, sizeof(wb_pulse_timer));
+    os_bzero(&wb_pulse_timer, sizeof(wb_pulse_timer));
     wb_pulse_list_clear();
     wb_selected_type = UNKNOWN_WALLBOX;
     wb_active_type = UNKNOWN_WALLBOX;

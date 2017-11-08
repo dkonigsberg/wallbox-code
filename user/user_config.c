@@ -26,7 +26,7 @@ LOCAL struct esp_saved_param_t esp_param;
 
 void ICACHE_FLASH_ATTR user_config_init(void)
 {
-    os_memset(&esp_param, 0, sizeof(esp_param));
+    os_bzero(&esp_param, sizeof(esp_param));
 
     // Try to load existing parameter data
     if (!system_param_load(ESP_PARAM_START_SEC, 0, &esp_param, sizeof(esp_param))) {
@@ -44,7 +44,7 @@ void ICACHE_FLASH_ATTR user_config_init(void)
         }
 
         // Prepare a clean version of the struct
-        os_memset(&esp_param, 0, sizeof(esp_param));
+        os_bzero(&esp_param, sizeof(esp_param));
         esp_param.version = ESP_PARAM_VERSION;
 
         if (!system_param_save_with_protect(ESP_PARAM_START_SEC, &esp_param, sizeof(esp_param))) {
@@ -84,10 +84,10 @@ void ICACHE_FLASH_ATTR user_config_set_sonos_uuid(const char *uuid)
         return;
     }
 
-    os_memset(&esp_param.sonos_uuid, 0, sizeof(esp_param.sonos_uuid));
+    os_bzero(esp_param.sonos_uuid, sizeof(esp_param.sonos_uuid));
 
     if (uuid && uuid[0] != '\0') {
-        os_strcpy(&esp_param.sonos_uuid, uuid);
+        os_strcpy(esp_param.sonos_uuid, uuid);
     }
 
     if (!system_param_save_with_protect(ESP_PARAM_START_SEC, &esp_param, sizeof(esp_param))) {
@@ -107,10 +107,10 @@ void ICACHE_FLASH_ATTR user_config_set_sonos_uri_base(const char *uri_base)
         return;
     }
 
-    os_memset(&esp_param.sonos_uri_base, 0, sizeof(esp_param.sonos_uri_base));
+    os_bzero(esp_param.sonos_uri_base, sizeof(esp_param.sonos_uri_base));
 
     if (uri_base && uri_base[0] != '\0') {
-        os_strcpy(&esp_param.sonos_uri_base, uri_base);
+        os_strcpy(esp_param.sonos_uri_base, uri_base);
     }
 
     if (!system_param_save_with_protect(ESP_PARAM_START_SEC, &esp_param, sizeof(esp_param))) {
@@ -127,7 +127,7 @@ void ICACHE_FLASH_ATTR user_config_set_sonos_track_files(char (*track_file)[200]
 {
     int i;
     for (i = 0; i < 200; i++) {
-        os_strncpy(&(esp_param.sonos_track_file[i]), (*track_file)[i], 16);
+        os_strncpy(esp_param.sonos_track_file[i], (*track_file)[i], 16);
         esp_param.sonos_track_file[i][15] = '\0';
     }
 

@@ -2,6 +2,7 @@
 
 #include <os_type.h>
 #include <osapi.h>
+#include <stdlib.h>
 
 #define NS_INADDRSZ 4
 

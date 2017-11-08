@@ -8,6 +8,7 @@
 #include <espconn.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <stdlib.h>
 
 #include "user_sonos_request.h"
 #include "user_util.h"
@@ -47,14 +48,14 @@ LOCAL os_timer_t resubscribe_timer;
 
 void ICACHE_FLASH_ATTR user_sonos_listener_init(void)
 {
-    os_memset(&subscribed_device, 0, sizeof(sonos_device));
-    os_memset(&subscribe_info, 0, sizeof(sonos_subscribe_info));
+    os_bzero(&subscribed_device, sizeof(sonos_device));
+    os_bzero(&subscribe_info, sizeof(sonos_subscribe_info));
 
     // Create a listener for Sonos notifications
-    os_memset(&sonos_listener_tcp, 0, sizeof(esp_tcp));
+    os_bzero(&sonos_listener_tcp, sizeof(esp_tcp));
     sonos_listener_tcp.local_port = LISTENER_PORT;
 
-    os_memset(&sonos_listener_conn, 0, sizeof(struct espconn));
+    os_bzero(&sonos_listener_conn, sizeof(struct espconn));
     sonos_listener_conn.type = ESPCONN_TCP;
     sonos_listener_conn.state = ESPCONN_NONE;
     sonos_listener_conn.proto.tcp = &sonos_listener_tcp;
@@ -99,7 +100,7 @@ void ICACHE_FLASH_ATTR user_sonos_listener_subscribe(const sonos_device *device)
     }
 
     os_memcpy(&subscribed_device, device, sizeof(sonos_device));
-    os_memset(&subscribe_info, 0, sizeof(sonos_subscribe_info));
+    os_bzero(&subscribe_info, sizeof(sonos_subscribe_info));
     os_timer_disarm(&resubscribe_timer);
     subscribe_request_lock = 1;
 }
@@ -121,8 +122,8 @@ LOCAL void ICACHE_FLASH_ATTR subscribe_request_callback(
         }
     }
     else {
-        os_memset(&subscribed_device, 0, sizeof(sonos_device));
-        os_memset(&subscribe_info, 0, sizeof(sonos_subscribe_info));
+        os_bzero(&subscribed_device, sizeof(sonos_device));
+        os_bzero(&subscribe_info, sizeof(sonos_subscribe_info));
     }
 
     subscribe_request_lock = 0;
@@ -187,7 +188,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_listener_connect_callback(void *arg)
 LOCAL void ICACHE_FLASH_ATTR sonos_listener_reconnect_callback(void *arg, sint8 err)
 {
     struct espconn *pesp_conn = arg;
-    sonos_notification *sn = (sonos_notification *)pesp_conn->reverse;
+    //sonos_notification *sn = (sonos_notification *)pesp_conn->reverse;
 
     os_printf("sonos_listener_reconnect_callback: %d.%d.%d.%d:%d, err=%d\n",
         pesp_conn->proto.tcp->remote_ip[0],
@@ -232,7 +233,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_listener_disconnect_callback(void *arg)
             unescape_html_entities(pstart, n);
 
             sonos_notify_info info;
-            os_memcpy(info, 0, sizeof(sonos_notify_info));
+            os_bzero(&info, sizeof(sonos_notify_info));
 
             os_memcpy(info.subscribe_id, sn->subscribe_id, sizeof(info.subscribe_id));
 
@@ -268,7 +269,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_listener_disconnect_callback(void *arg)
                     if (num >= 0 && num < INT_MAX) {
                         info.number_of_tracks = num;
                     } else {
-                        os_printf("NumberOfTracks invalid: %d\n", num);
+                        os_printf("NumberOfTracks invalid: %ld\n", num);
                     }
                 }
             }
@@ -282,7 +283,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_listener_disconnect_callback(void *arg)
                     if (num >= 0 && num < INT_MAX) {
                         info.current_track = num;
                     } else {
-                        os_printf("CurrentTrack invalid: %d\n", num);
+                        os_printf("CurrentTrack invalid: %ld\n", num);
                     }
                 }
             }
@@ -369,7 +370,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_listener_recv_callback(void *arg, char *pusrd
                     ptemp += 16; n -= 16;
                     long int len_value = strtol(ptemp, NULL, 10);
                     if (len_value <= 0 || len_value > INT_MAX) {
-                        os_printf("Length invalid: len=%d\n", len_value);
+                        os_printf("Length invalid: len=%ld\n", len_value);
                         sn->error = true;
                         return;
                     }

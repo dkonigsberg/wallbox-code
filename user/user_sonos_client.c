@@ -10,6 +10,7 @@
 #include "user_sonos_discovery.h"
 #include "user_sonos_listener.h"
 #include "user_sonos_request.h"
+#include "user_util.h"
 
 typedef struct sonos_enqueue_data {
     sonos_device device;
@@ -34,8 +35,8 @@ LOCAL bool enqueue_lock = false;
 
 void ICACHE_FLASH_ATTR user_sonos_client_init(void)
 {
-    os_memset(&device, 0, sizeof(sonos_device));
-    os_memset(&device_notify_info, 0, sizeof(sonos_notify_info));
+    os_bzero(&device, sizeof(sonos_device));
+    os_bzero(&device_notify_info, sizeof(sonos_notify_info));
     device_notify_time = 0;
 }
 
@@ -63,7 +64,7 @@ bool ICACHE_FLASH_ATTR user_sonos_client_set_device(const char *uuid)
     }
 
     if (device_set) {
-        os_memset(&device_notify_info, 0, sizeof(sonos_notify_info));
+        os_bzero(&device_notify_info, sizeof(sonos_notify_info));
         device_notify_time = 0;
         user_sonos_listener_subscribe(&device);
         user_sonos_listener_set_callback(sonos_listener_callback, NULL);

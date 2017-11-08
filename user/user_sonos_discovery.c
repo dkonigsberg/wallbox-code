@@ -9,6 +9,7 @@
 #include <sys/queue.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <stdlib.h>
 
 #include "user_util.h"
 
@@ -50,10 +51,10 @@ void ICACHE_FLASH_ATTR user_sonos_discovery_init(void)
     SLIST_INIT(&sonos_device_list);
 
     // Create a listener for SSDP broadcasts
-    os_memset(&ssdp_listener_udp, 0, sizeof(esp_udp));
+    os_bzero(&ssdp_listener_udp, sizeof(esp_udp));
     ssdp_listener_udp.local_port = SSDP_PORT;
 
-    os_memset(&ssdp_listener_conn, 0, sizeof(struct espconn));
+    os_bzero(&ssdp_listener_conn, sizeof(struct espconn));
     ssdp_listener_conn.type = ESPCONN_UDP;
     ssdp_listener_conn.proto.udp = &ssdp_listener_udp;
     espconn_regist_recvcb(&ssdp_listener_conn, ssdp_recv_callback);
@@ -79,7 +80,7 @@ void ICACHE_FLASH_ATTR user_sonos_discovery_start(void)
         return;
     }
 
-    os_memset(&ssdp_request_udp, 0, sizeof(esp_udp));
+    os_bzero(&ssdp_request_udp, sizeof(esp_udp));
     ssdp_request_udp.local_port = LOCAL_PORT;
     ssdp_request_udp.remote_ip[0] = 239;
     ssdp_request_udp.remote_ip[1] = 255;
@@ -87,7 +88,7 @@ void ICACHE_FLASH_ATTR user_sonos_discovery_start(void)
     ssdp_request_udp.remote_ip[3] = 250;
     ssdp_request_udp.remote_port = SSDP_PORT;
 
-    os_memset(&ssdp_request_conn, 0, sizeof(struct espconn));
+    os_bzero(&ssdp_request_conn, sizeof(struct espconn));
     ssdp_request_conn.type = ESPCONN_UDP;
     ssdp_request_conn.proto.udp = &ssdp_request_udp;
 
@@ -225,7 +226,7 @@ LOCAL void ICACHE_FLASH_ATTR ssdp_recv_callback(void *arg, char *pusrdata, unsig
 
     result = espconn_get_connection_info(pesp_conn, &premot, 0);
     if(result != ESPCONN_OK) {
-        os_printf("espconn_get_connection_info err=%d\n");
+        os_printf("espconn_get_connection_info err=%d\n", result);
         return;
     }
 
@@ -243,7 +244,7 @@ LOCAL void ICACHE_FLASH_ATTR ssdp_recv_callback(void *arg, char *pusrdata, unsig
         return;
     }
 
-    os_memset(&device_info, 0, sizeof(sonos_device));
+    os_bzero(&device_info, sizeof(sonos_device));
     device_info.ip[0] = premot->remote_ip[0];
     device_info.ip[1] = premot->remote_ip[1];
     device_info.ip[2] = premot->remote_ip[2];
@@ -320,8 +321,6 @@ LOCAL void ICACHE_FLASH_ATTR ssdp_recv_callback(void *arg, char *pusrdata, unsig
                 }
             }
             else if (line_len > 10 && os_strncmp(line_buf, "LOCATION: ", 10) == 0) {
-                int n = line_len - 10;
-
                 if (os_strncmp(line_buf + 10, "http://", 7) == 0) {
                     char *qtemp, *rtemp;
                     char buf[128];
@@ -440,7 +439,7 @@ LOCAL void ICACHE_FLASH_ATTR zp_request_connect_callback(void *arg)
         IP2STR(pespconn->proto.tcp->remote_ip),
         pespconn->proto.tcp->remote_port);
 
-    espconn_sent(pespconn, payload_buf, os_strlen(payload_buf));
+    espconn_sent(pespconn, (uint8 *)payload_buf, os_strlen(payload_buf));
 
     os_free(payload_buf);
 }

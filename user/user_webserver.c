@@ -7,15 +7,19 @@
 #include <user_interface.h>
 #include <espconn.h>
 #include <sys/param.h>
+#include <stdlib.h>
 
 #include <libesphttpd/platform.h>
+#include <libesphttpd/espfs.h>
 #include <libesphttpd/httpd.h>
 #include <libesphttpd/httpdespfs.h>
 #include <libesphttpd/webpages-espfs.h>
 #include <libesphttpd/cgiwifi.h>
 #include <libesphttpd/captdns.h>
 
+#include "user_config.h"
 #include "user_wb_credit.h"
+#include "user_wb_selection.h"
 #include "user_sonos_discovery.h"
 #include "user_sonos_client.h"
 #include "user_util.h"
@@ -177,6 +181,10 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_credit(HttpdConnData *data)
             os_printf("Inserted quarter\n");
             credit_result = user_wb_credit_drop(QUARTER);
         }
+    }
+
+    if (credit_result != 1) {
+        os_printf("Credit drop error: %d\n", credit_result);
     }
 
     httpdRedirect(data, "/index.html");

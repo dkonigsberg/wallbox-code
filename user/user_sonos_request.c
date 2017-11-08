@@ -8,6 +8,9 @@
 #include <espconn.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <stdlib.h>
+
+#include "user_util.h"
 
 #define PACKET_SIZE (2 * 1024)
 
@@ -387,7 +390,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_request_connect_callback(void *arg)
     espconn_regist_sentcb(pespconn, sonos_request_sent_callback);
     espconn_regist_recvcb(pespconn, sonos_request_recv_callback);
 
-    result = espconn_sent(pespconn, request->payload, request->payload_len);
+    result = espconn_sent(pespconn, (uint8 *)request->payload, request->payload_len);
     if (result != ESPCONN_OK) {
         os_printf("espconn_sent error: %d\n", result);
     }
@@ -430,7 +433,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_request_disconnect_callback(void *arg)
         char buf[128];
 
         sonos_add_uri_info info;
-        os_memset(&info, 0, sizeof(sonos_add_uri_info));
+        os_bzero(&info, sizeof(sonos_add_uri_info));
 
         ptemp = (char *)os_strstr(pstart, "<FirstTrackNumberEnqueued>");
         if (ptemp) {
@@ -487,7 +490,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_request_disconnect_callback(void *arg)
         char buf[128];
 
         sonos_position_info info;
-        os_memset(&info, 0, sizeof(sonos_position_info));
+        os_bzero(&info, sizeof(sonos_position_info));
 
         ptemp = (char *)os_strstr(pstart, "<Track>");
         if (ptemp) {
@@ -552,7 +555,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_request_disconnect_callback(void *arg)
     else if (is_success && hstart && (request->request_type == REQUEST_SUBSCRIBE
             || request->request_type == REQUEST_RESUBSCRIBE)) {
         sonos_subscribe_info info;
-        os_memset(&info, 0, sizeof(sonos_subscribe_info));
+        os_bzero(&info, sizeof(sonos_subscribe_info));
 
         char *ptemp = hstart;
         char *qtemp = (char *)os_strstr(ptemp, "\r\n");
@@ -571,7 +574,7 @@ LOCAL void ICACHE_FLASH_ATTR sonos_request_disconnect_callback(void *arg)
                 ptemp += 16; n -= 16;
                 long int sec_value = strtol(ptemp, NULL, 10);
                 if (sec_value <= 0 || sec_value > INT_MAX) {
-                    os_printf("Timeout invalid: t=%d\n", sec_value);
+                    os_printf("Timeout invalid: t=%ld\n", sec_value);
                     break;
                 }
                 info.timeout_secs = sec_value;

@@ -56,7 +56,7 @@ LOCAL void ICACHE_FLASH_ATTR log_system_info()
     }
     os_printf("\n");
 
-    char macaddr[6];
+    uint8 macaddr[6];
     if (wifi_get_macaddr(STATION_IF, macaddr)) {
         os_printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
             macaddr[0], macaddr[1], macaddr[2],
@@ -71,7 +71,7 @@ LOCAL void ICACHE_FLASH_ATTR user_wifi_event_handler(System_Event_t *evt)
     if (evt->event == EVENT_STAMODE_GOT_IP) {
         user_sonos_discovery_start();
     }
-    else if (evt->event = EVENT_STAMODE_DISCONNECTED) {
+    else if (evt->event == EVENT_STAMODE_DISCONNECTED) {
         user_sonos_discovery_abort();
     }
 }
@@ -98,7 +98,7 @@ void ICACHE_FLASH_ATTR user_main_wifi_init()
 {
     if (config_mode) {
         struct softap_config config;
-        char macaddr[6];
+        uint8 macaddr[6];
 
         // Disable Wi-Fi auto-connect
         if (!wifi_station_set_auto_connect(0)) {
@@ -126,7 +126,7 @@ void ICACHE_FLASH_ATTR user_main_wifi_init()
 
         // Construct an obvious SSID based on the device-specific
         // part of the MAC address.
-        config.ssid_len = os_sprintf(config.ssid,
+        config.ssid_len = os_sprintf((char *)config.ssid,
             "Wallbox %02X%02X%02X",
             macaddr[3], macaddr[4], macaddr[5]);
 
@@ -175,7 +175,7 @@ void ICACHE_FLASH_ATTR user_init()
     user_main_gpio_init();
 
     os_printf("\n\n"); 
-    os_delay_us(100000);
+    os_delay_us(UINT16_MAX);
     os_printf("\n\n"); 
     os_printf("----------------------\n");
     os_printf("Wall-O-Matic Interface\n");
