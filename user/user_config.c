@@ -5,7 +5,7 @@
 #include <user_interface.h>
 
 #define ESP_PARAM_VERSION 1
-#define ESP_PARAM_START_SEC 0x6C
+#define ESP_PARAM_START_SEC 0x7C
 
 /*
  * Saved parameter struct.

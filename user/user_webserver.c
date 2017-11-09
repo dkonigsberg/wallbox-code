@@ -15,6 +15,7 @@
 #include <libesphttpd/httpdespfs.h>
 #include <libesphttpd/webpages-espfs.h>
 #include <libesphttpd/cgiwifi.h>
+#include <libesphttpd/cgiflash.h>
 #include <libesphttpd/captdns.h>
 
 #include "user_config.h"
@@ -45,6 +46,14 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_sonos_zone_list(HttpdConnData *data);
 LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_sonos_zone_select(HttpdConnData *data);
 LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_wb_song_list(HttpdConnData *data);
 LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_wb_song_select(HttpdConnData *data);
+
+LOCAL const CgiUploadFlashDef FLASH_UPLOAD_PARAMS = {
+    .type=CGIFLASH_TYPE_FW,
+    .fw1Pos=0x01000,
+    .fw2Pos=0x81000,
+    .fwSize=0x6B000,
+    .tagName=OTA_TAGNAME
+};
 
 LOCAL const HttpdBuiltInUrl CONFIG_URL_MAP[] = {
     {"/", cgiRedirect, "/wifi.tpl"},
@@ -81,6 +90,9 @@ LOCAL const HttpdBuiltInUrl FIXED_URL_MAP[] = {
     {"/songselect.cgi", cgi_wb_song_select, NULL},
     {"/control/credit", cgi_credit, NULL},
     {"/control/sonos", cgi_sonos, NULL},
+    {"/control/flash_next", cgiGetFirmwareNext, &FLASH_UPLOAD_PARAMS},
+    {"/control/flash_upload", cgiUploadFirmware, &FLASH_UPLOAD_PARAMS},
+    {"/control/flash_reboot", cgiRebootFirmware, NULL},
     {"*", cgiEspFsHook, NULL},
     {NULL, NULL, NULL}
 };
