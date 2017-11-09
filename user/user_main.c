@@ -25,6 +25,7 @@ LOCAL void ICACHE_FLASH_ATTR log_system_info()
 {
     enum flash_size_map size_map = system_get_flash_size_map();
 
+    os_printf("Firmware build: %s\n", BUILD_DESCRIBE);
     os_printf("SDK version: %s\n", system_get_sdk_version());
 
     os_printf("Flash size: ");
@@ -50,6 +51,14 @@ LOCAL void ICACHE_FLASH_ATTR log_system_info()
     case FLASH_SIZE_32M_MAP_1024_1024:
         os_printf("32Mbit (1024KB+1024KB)");
         break;
+    case FLASH_SIZE_32M_MAP_2048_2048:
+        os_printf("32Mbit (2024KB+2024KB)");
+        break;
+    case FLASH_SIZE_64M_MAP_1024_1024:
+        os_printf("64Mbit (1024KB+1024KB)");
+        break;
+    case FLASH_SIZE_128M_MAP_1024_1024:
+        os_printf("128Mbit (1024KB+1024KB)");
     default:
         os_printf("Unknown");
         break;

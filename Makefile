@@ -29,6 +29,7 @@ ESPPORT		?= /dev/ttyUSB0
 
 # name for the target project
 TARGET		= app
+BUILD_DESCRIBE := $(shell git describe --long --match 'v[0-9]*.*' --dirty)
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES		= driver user
@@ -42,6 +43,7 @@ LIBS		+= esphttpd webpages-espfs
 
 # compiler flags using during compilation of source files
 CFLAGS		= -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wall -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
+CFLAGS		+= -DBUILD_DESCRIBE=\"$(BUILD_DESCRIBE)\"
 
 # linker flags used to generate the main object file
 LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static

@@ -36,6 +36,7 @@ typedef struct wb_song_select_data {
     int buf_len;
 } wb_song_select_data;
 
+LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_about(HttpdConnData *connData, char *token, void **arg);
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_sonos(HttpdConnData *connData, char *token, void **arg);
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_wallbox(HttpdConnData *connData, char *token, void **arg);
 LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_credit(HttpdConnData *data);
@@ -59,6 +60,9 @@ LOCAL const HttpdBuiltInUrl CONFIG_URL_MAP[] = {
 
 LOCAL const HttpdBuiltInUrl FIXED_URL_MAP[] = {
     {"/", cgiRedirect, "/index.html"},
+    {"/about", cgiRedirect, "/about.tpl"},
+    {"/about/", cgiRedirect, "/about.tpl"},
+    {"/about.tpl", cgiEspFsTemplate, tpl_about},
     {"/wifi", cgiRedirect, "/wifi.tpl"},
     {"/wifi/", cgiRedirect, "/wifi.tpl"},
     {"/wifiscan.cgi", cgiWiFiScan, NULL},
@@ -93,6 +97,86 @@ void ICACHE_FLASH_ATTR user_webserver_init(uint32 port, bool config_mode)
     httpdInit(
         config_mode ? CONFIG_URL_MAP : FIXED_URL_MAP,
         port, HTTPD_FLAG_NONE);
+}
+
+LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_about(HttpdConnData *connData, char *token, void **arg)
+{
+    char buf[128];
+    if (!token) return HTTPD_CGI_DONE;
+
+    os_bzero(buf, sizeof(buf));
+
+    if (os_strcmp(token, "BuildDescribe") == 0) {
+        os_sprintf(buf, "%s", BUILD_DESCRIBE);
+    }
+    else if (os_strcmp(token, "SdkVersion") == 0) {
+        os_sprintf(buf, "%s", system_get_sdk_version());
+    }
+    else if (os_strcmp(token, "BootVersion") == 0) {
+        os_sprintf(buf, "v1.%d", system_get_boot_version());
+    }
+    else if (os_strcmp(token, "CpuFreq") == 0) {
+        os_sprintf(buf, "%dMHz", system_get_cpu_freq());
+    }
+    else if (os_strcmp(token, "UserBinAddr") == 0) {
+        os_sprintf(buf, "0x%08X", system_get_userbin_addr());
+    }
+    else if (os_strcmp(token, "FlashSize") == 0) {
+        switch(system_get_flash_size_map()) {
+        case FLASH_SIZE_4M_MAP_256_256:
+            os_sprintf(buf, "4Mbit (256KB+256KB)");
+            break;
+        case FLASH_SIZE_2M:
+            os_sprintf(buf, "2Mbit");
+            break;
+        case FLASH_SIZE_8M_MAP_512_512:
+            os_sprintf(buf, "8Mbit (512KB+512KB)");
+            break;
+        case FLASH_SIZE_16M_MAP_512_512:
+            os_sprintf(buf, "16Mbit (512KB+512KB)");
+            break;
+        case FLASH_SIZE_32M_MAP_512_512:
+            os_sprintf(buf, "32Mbit (512KB+512KB)");
+            break;
+        case FLASH_SIZE_16M_MAP_1024_1024:
+            os_sprintf(buf, "16Mbit (1024KB+1024KB)");
+            break;
+        case FLASH_SIZE_32M_MAP_1024_1024:
+            os_sprintf(buf, "32Mbit (1024KB+1024KB)");
+            break;
+        case FLASH_SIZE_32M_MAP_2048_2048:
+            os_sprintf(buf, "32Mbit (2024KB+2024KB)");
+            break;
+        case FLASH_SIZE_64M_MAP_1024_1024:
+            os_sprintf(buf, "64Mbit (1024KB+1024KB)");
+            break;
+        case FLASH_SIZE_128M_MAP_1024_1024:
+            os_sprintf(buf, "128Mbit (1024KB+1024KB)");
+            break;
+        default:
+            os_sprintf(buf, "Unknown");
+            break;
+        }
+    }
+    else if (os_strcmp(token, "IpAddress") == 0) {
+        struct ip_info info;
+        if (wifi_get_ip_info(STATION_IF, &info)) {
+            os_sprintf(buf, "%d.%d.%d.%d",
+                (info.ip.addr >> 0) & 0xff, (info.ip.addr >> 8) & 0xff,
+                (info.ip.addr >> 16) & 0xff, (info.ip.addr >> 24) & 0xff);
+        }
+    }
+    else if (os_strcmp(token, "MacAddress") == 0) {
+        uint8 macaddr[6];
+        if (wifi_get_macaddr(STATION_IF, macaddr)) {
+            os_sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x\n",
+                macaddr[0], macaddr[1], macaddr[2],
+                macaddr[3], macaddr[4], macaddr[5]);
+        }
+    }
+
+    httpdSend(connData, buf, -1);
+    return HTTPD_CGI_DONE;
 }
 
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_sonos(HttpdConnData *connData, char *token, void **arg)
