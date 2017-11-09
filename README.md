@@ -1,11 +1,15 @@
 # Wallbox Interface Firmware
 
 ## Introduction
-This repository provides all the code for the firmware of the
-Wall-O-Matic Interface Board project.
+This repository provides all the code for the firmware that runs on the
+ESP8266 (ESP-12S) module that is part of my Wall-O-Matic Interface Board.
+
+The interface board is a device designed to take a Seeburg Wall-O-Matic
+jukebox remote, a common sight on a sterotypical 1950's diner tabletop,
+and interface it to a Sonos system via Wi-Fi.
 
 The main repository for this project is:
-https://github.com/dkonigsberg/wallbox-board
+https://github.com/dkonigsberg/wallbox-code
 
 The schematics for the board itself can be found here:
 https://github.com/dkonigsberg/wallbox-board
