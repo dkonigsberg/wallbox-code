@@ -1,12 +1,16 @@
 # Wallbox Interface Firmware
 
+![Seeburg Wall-O-Matic 100](https://github.com/dkonigsberg/wallbox-code/blob/master/docs/images/wb100-front.jpg?raw=true)
+
 ## Introduction
 This repository provides all the code for the firmware that runs on the
-ESP8266 (ESP-12S) module that is part of my Wall-O-Matic Interface Board.
+ESP8266 (ESP-12S) module that is part of the Wall-O-Matic Interface Board.
 
 The interface board is a device designed to take a Seeburg Wall-O-Matic
 jukebox remote, a common sight on a sterotypical 1950's diner tabletop,
 and interface it to a Sonos system via Wi-Fi.
+
+![Wall-O-Matic Interface Board](https://github.com/dkonigsberg/wallbox-code/blob/master/docs/images/pcb-rev-b.jpg?raw=true)
 
 The main repository for this project is:
 https://github.com/dkonigsberg/wallbox-code
@@ -24,7 +28,6 @@ A good overview of the project can be found in these blog posts:
 
 You can see a video about the project here:
 * [Wallbox Interface Assembly and Testing](https://www.youtube.com/watch?v=2aR7-YdtxFc)
-
 
 ## Building the toolchain
 ```sh
