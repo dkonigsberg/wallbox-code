@@ -205,20 +205,23 @@
 </head>
 <body>
     <div id="main">
-    <font size="+2"><b>Wallbox Configuration</b></font><br/>
+    <font size="+2">
+        <a href="/" class="prev-button"><b>&#8249;</b></a>
+        <b>Wallbox Configuration</b>
+    </font><br/>
     <hr/>
     <form name="songform" action="songselect.cgi" method="post">
     <p>
-        Wallbox Type:<br/>
+        <b>Wallbox type:</b><br/>
         <select id="wallbox_type" name="wallbox" onchange="buildSongSheet()">
             <option value="UNKNOWN_WALLBOX" selected>Unknown</option>
-            <option value="SEEBURG_3W1_100">Seeburg Wall-O-Matic 3W-1 100</option>
-            <option value="SEEBURG_V3WA_200">Seeburg Wall-O-Matic V-3WA 200</option>
+            <option value="SEEBURG_3W1_100">Seeburg Wall-O-Matic 3W-1 &quot;100&quot;</option>
+            <option value="SEEBURG_V3WA_200">Seeburg Wall-O-Matic V-3WA &quot;200&quot;</option>
         </select>
     </p>
     <p>
         <div id="base_path">
-        Base folder path:<br/>
+        <b>Base folder path:</b><br/>
         <input id="uri_base" type="text" name="uri-base" size="64" maxlength="255"/>
         </div>
     </p>

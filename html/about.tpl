@@ -8,7 +8,10 @@
 </head>
 <body>
     <div id="main">
-    <font size="+2"><b>About</b></font><br/>
+    <font size="+2">
+        <a href="/" class="prev-button"><b>&#8249;</b></a>
+        <b>About</b>
+    </font><br/>
     <hr/>
     <p>
         <font size="+1"><b>Wall-O-Matic Interface Board</b></font>
@@ -24,6 +27,12 @@
         <tr><td><b>IP address:</b>&nbsp;&nbsp;</td><td>%IpAddress%</td></tr>
         <tr><td><b>MAC address:</b>&nbsp;&nbsp;</td><td>%MacAddress%</td></tr>
         </table>
+    </p>
+    <p>
+        Source code: <a href="https://github.com/dkonigsberg/wallbox-code">wallbox-code</a>
+    </p>
+    <p>
+        Circuit schematics: <a href="https://github.com/dkonigsberg/wallbox-board">wallbox-board</a>
     </p>
     </div>
 </body>

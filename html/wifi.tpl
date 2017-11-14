@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wi-Fi Configuration</title>
+<title>Wi-Fi Setup</title>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <script type="text/javascript" src="js/140medley.min.js"></script>
 <script type="text/javascript">
@@ -17,13 +17,13 @@ function createInputForAp(ap) {
     div.id="apdiv";
     var rssi=document.createElement("div");
     var rssiVal=-Math.floor(ap.rssi/51)*32;
-    rssi.className="icon";
+    rssi.className="wifi-icon";
     rssi.style.backgroundPosition="0px "+rssiVal+"px";
     var encrypt=document.createElement("div");
     var encVal="-64"; //assume wpa/wpa2
     if (ap.enc=="0") encVal="0"; //open
     if (ap.enc=="1") encVal="-32"; //wep
-    encrypt.className="icon";
+    encrypt.className="wifi-icon";
     encrypt.style.backgroundPosition="-32px "+encVal+"px";
     var input=document.createElement("input");
     input.type="radio";
@@ -86,26 +86,33 @@ function scanAPs() {
 }
 
 window.onload=function(e) {
+    if ("%WiFiMode%" != "Client") {
+        document.getElementById("home-button").style.display = "none";
+    }
     scanAPs();
 };
 </script>
 </head>
 <body>
 <div id="main">
-<font size="+2"><b>Wi-Fi Configuration</b></font><br/>
+<font size="+2">
+    <a id="home-button" href="/" class="prev-button"><b>&#8249;</b></a>
+    <b>Wi-Fi Setup</b>
+</font><br/>
 <hr/>
 <p>
-    Current WiFi network: %currSsid%
+    <b>Current Wi-Fi network:</b> %currSsid%
 <p>
-    Current WiFi mode: %WiFiMode%
+    <b>Current Wi-Fi mode:</b> %WiFiMode%
 </p>
+<br/>
 <form name="wifiform" action="connect.cgi" method="post">
 <p>
-    To connect to a WiFi network, please select one of the detected networks...<br>
-    <div id="aps">Scanning...</div>
-    <br>
-    WiFi password, if applicable: <br />
-    <input type="password" name="passwd" value="%WiFiPasswd%"><br />
+    To connect to Wi-Fi, please select one of the detected networks:<br/>
+    <div id="aps"><i>Scanning...</i></div>
+    <br/>
+    Wi-Fi password, if applicable:<br/>
+    <input type="password" name="passwd" value="%WiFiPasswd%"><br/>
     <br />
     <input type="submit" name="connect" value="Connect!">
 </p>

@@ -17,10 +17,10 @@ li {
     width: 80%;
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px
+    padding: 20px;
 }
 
-.icon {
+.wifi-icon {
     background-image: url("images/wifi-icons.png");
     background-color: transparent;
     width: 32px;
@@ -28,26 +28,42 @@ li {
     display: inline-block;
 }
 
-.vertical-menu {
-}
-
-.vertical-menu a {
-    color: #0000EE;
-    display: block;
-    padding: 12px;
+.prev-button {
+    background-color: #f1f1f1;
+    color: black;
     text-decoration: none;
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 5px;
+    border: 1px solid #808080;
 }
 
-.coin-area {
+.prev-button:hover {
+    background-color: #cecece;
+    color: black;
+}
+
+.box-area {
     padding: 12px;
+    margin-bottom: 12px;
     background-color: #dedede;
-    display: inline-block;
+    display: block;
     color: black;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px;
     border: 2px solid #000000;
     border-color: #A0A0A0;
+}
+
+.box-area a {
+    color: #0000EE;
+    display: table;
+    text-decoration: none;
+}
+
+.box-area a + a {
+    margin-top: 18px;
 }
 
 .coin-button {

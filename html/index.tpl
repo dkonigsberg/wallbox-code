@@ -11,14 +11,11 @@
 <font size="+2"><b>Wall-O-Matic Interface</b></font><br/>
 <hr/>
 <p>
-    <div class="vertical-menu">
-        <a href="/about">About</a>
-        <a href="/wifi">Configure Wi-Fi</a>
-        <a href="/sonos">Select Sonos Device</a>
-        <a href="/wallbox">Configure Wallbox</a>
-        <a href="/flash.html">Upgrade Firmware</a>
+    <div class="box-area" style="line-height: 28px; display:block">
+        %WallboxType%<br/>
+        %SonosZone%<br/>
     </div>
-    <div class="coin-area">
+    <div class="box-area">
         Insert Coins<br/>
         <form method="post" action="/control/credit">
             <table class="coin-button-table"><tr>
@@ -28,13 +25,21 @@
             </tr></table>
         </form>
     </div>
+    <div class="box-area">
+        <a href="/about">About</a>
+        <a href="/wifi">Wi-Fi Setup</a>
+        <a href="/sonos">Select Sonos Zone</a>
+        <a href="/wallbox">Wallbox Configuration</a>
+        <a href="/flash.html">Update Firmware</a>
+    </div>
 </p>
-<br />
-<br />
-<br />
-<br />
 <hr/>
 <center><img src="images/lprobe-logo.png"/><br/></center>
 </div>
+<center><font size="-1">
+    <br/>
+    Copyright &#169; 2017, Derek Konigsberg<br/>
+    All rights reserved.
+</font></center>
 </body>
 </html>

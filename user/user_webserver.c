@@ -37,6 +37,7 @@ typedef struct wb_song_select_data {
     int buf_len;
 } wb_song_select_data;
 
+LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_index(HttpdConnData *connData, char *token, void **arg);
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_about(HttpdConnData *connData, char *token, void **arg);
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_sonos(HttpdConnData *connData, char *token, void **arg);
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_wallbox(HttpdConnData *connData, char *token, void **arg);
@@ -68,7 +69,9 @@ LOCAL const HttpdBuiltInUrl CONFIG_URL_MAP[] = {
 };
 
 LOCAL const HttpdBuiltInUrl FIXED_URL_MAP[] = {
-    {"/", cgiRedirect, "/index.html"},
+    {"/", cgiRedirect, "/index.tpl"},
+    {"/index.html", cgiRedirect, "/index.tpl"},
+    {"/index.tpl", cgiEspFsTemplate, tpl_index},
     {"/about", cgiRedirect, "/about.tpl"},
     {"/about/", cgiRedirect, "/about.tpl"},
     {"/about.tpl", cgiEspFsTemplate, tpl_about},
@@ -109,6 +112,41 @@ void ICACHE_FLASH_ATTR user_webserver_init(uint32 port, bool config_mode)
     httpdInit(
         config_mode ? CONFIG_URL_MAP : FIXED_URL_MAP,
         port, HTTPD_FLAG_NONE);
+}
+
+LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_index(HttpdConnData *connData, char *token, void **arg)
+{
+    char buf[128];
+    if (!token) return HTTPD_CGI_DONE;
+
+    os_bzero(buf, sizeof(buf));
+
+    if (os_strcmp(token, "WallboxType") == 0) {
+        switch(user_config_get_wallbox_type()) {
+        case SEEBURG_3W1_100:
+            os_strcpy(buf, "Seeburg Wall-O-Matic \"100\"");
+            break;
+        case SEEBURG_V3WA_200:
+            os_strcpy(buf, "Seeburg Wall-O-Matic \"200\"");
+            break;
+        case UNKNOWN_WALLBOX:
+        default:
+            os_strcpy(buf, "<i>Wallbox Not Configured</i>");
+            break;
+        }
+    }
+    else if (os_strcmp(token, "SonosZone") == 0) {
+        sonos_device device;
+        if (user_sonos_client_get_device(&device)) {
+            os_sprintf(buf, "%s", device.zone_name);
+        }
+        else {
+            os_sprintf(buf, "<i>Sonos Zone Not Configured</i>");
+        }
+    }
+
+    httpdSend(connData, buf, -1);
+    return HTTPD_CGI_DONE;   
 }
 
 LOCAL CgiStatus ICACHE_FLASH_ATTR tpl_about(HttpdConnData *connData, char *token, void **arg)
@@ -283,7 +321,7 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_credit(HttpdConnData *data)
         os_printf("Credit drop error: %d\n", credit_result);
     }
 
-    httpdRedirect(data, "/index.html");
+    httpdRedirect(data, "/index.tpl");
     return HTTPD_CGI_DONE;
 }
 
@@ -308,7 +346,7 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_sonos(HttpdConnData *data)
             os_printf("Discovering SONOS devices...\n");
             user_sonos_discovery_start();
         }
-        httpdRedirect(data, "/index.html");
+        httpdRedirect(data, "/index.tpl");
         return HTTPD_CGI_DONE;
     }
 
@@ -323,12 +361,12 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_sonos(HttpdConnData *data)
             user_config_set_sonos_uuid(buf);
         }
 
-        httpdRedirect(data, "/index.html");
+        httpdRedirect(data, "/index.tpl");
         return HTTPD_CGI_DONE;
     }
 
 
-    httpdRedirect(data, "/index.html");
+    httpdRedirect(data, "/index.tpl");
     return HTTPD_CGI_DONE;
 }
 
@@ -385,7 +423,7 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_sonos_zone_select(HttpdConnData *data)
         }
     }
 
-    httpdRedirect(data, "/index.html");
+    httpdRedirect(data, "/index.tpl");
     return HTTPD_CGI_DONE;
 }
 
@@ -557,7 +595,7 @@ LOCAL CgiStatus ICACHE_FLASH_ATTR cgi_wb_song_select(HttpdConnData *data)
             os_free(state->buf);
         }
 
-        httpdRedirect(data, "/index.html");
+        httpdRedirect(data, "/index.tpl");
         return HTTPD_CGI_DONE;
     }
 }

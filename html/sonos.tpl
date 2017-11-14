@@ -38,9 +38,9 @@
                     for (var i=0; i<data.result.zones.length; i++) {
                         $("#zones").appendChild(createInputForZone(data.result.zones[i]));
                     }
-                    //window.setTimeout(showDiscoveredZones, 20000);
+                    window.setTimeout(showDiscoveredZones, 20000);
                 } else {
-                    //window.setTimeout(showDiscoveredZones, 1000);
+                    window.setTimeout(showDiscoveredZones, 1000);
                 }
             }
         }
@@ -54,15 +54,18 @@
 </head>
 <body>
     <div id="main">
-    <font size="+2"><b>Sonos Configuration</b></font><br/>
+    <font size="+2">
+        <a href="/" class="prev-button"><b>&#8249;</b></a>
+        <b>Sonos Configuration</b>
+    </font><br/>
     <hr/>
     <p>
-        Current Zone: %ZoneName%
+        <b>Selected Zone:</b> %ZoneName%
     </p>
     <p>
         <form name="wifiform" action="zoneselect.cgi" method="post">
         Discovered Zones:<br/>
-        <div id="zones">Discovering...</div><br/>
+        <div id="zones"><i>Discovering...</i></div><br/>
         <input type="submit" name="select" value="Select Zone"/>
         </form>
     </p>
